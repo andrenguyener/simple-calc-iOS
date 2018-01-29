@@ -49,7 +49,6 @@ class ViewController: UIViewController {
             runningNumber += "\(sender.tag)"
             outputLabel.text = runningNumber
         }
-               print("running number:\(runningNumber) left value:\(leftValue) right value: \(rightValue) current special operation:\(currentSpecialOperation) result:\(result) count: \(count)")
     }
     
     @IBAction func allClearPressed(_ sender: RoundButton) {
