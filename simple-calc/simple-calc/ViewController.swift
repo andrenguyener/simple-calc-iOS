@@ -13,6 +13,14 @@ enum Operation:String {
     case Subtract = "-"
     case Divide = "/"
     case Multiply = "*"
+    case Mod = "%"
+    case NULL = "Null"
+}
+
+enum SpecialOperation:String {
+    case Count
+    case Avg
+    case Fact
     case NULL = "Null"
 }
 
@@ -25,7 +33,10 @@ class ViewController: UIViewController {
     var rightValue = ""
     var result = ""
     var currentOperation:Operation = .NULL
-    
+    var currentSpecialOperation:SpecialOperation = .NULL
+    var count = 0
+    var sum = 0.0
+    var sumCount = 0
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -38,7 +49,7 @@ class ViewController: UIViewController {
             runningNumber += "\(sender.tag)"
             outputLabel.text = runningNumber
         }
-        print("running number:\(runningNumber) left value:\(leftValue) right value: \(rightValue) current operation:\(currentOperation) result:\(result)")
+               print("running number:\(runningNumber) left value:\(leftValue) right value: \(rightValue) current special operation:\(currentSpecialOperation) result:\(result) count: \(count)")
     }
     
     @IBAction func allClearPressed(_ sender: RoundButton) {
@@ -48,6 +59,10 @@ class ViewController: UIViewController {
         result = ""
         currentOperation = .NULL
         outputLabel.text = "0"
+        currentSpecialOperation = .NULL
+        count = 0
+        sum = 0
+        sumCount = 0
     }
     
     @IBAction func dotPressed(_ sender: RoundButton) {
@@ -58,7 +73,15 @@ class ViewController: UIViewController {
     }
     
     @IBAction func equalPressed(_ sender: RoundButton) {
-        operation(operation: currentOperation)
+        if currentSpecialOperation == .Count || currentSpecialOperation == .Avg || currentSpecialOperation == .Fact {
+            if (currentSpecialOperation == .Avg) {
+                sum += Double(runningNumber)!
+            }
+            runningNumber = ""
+            specialOperation(specialOperation: currentSpecialOperation)
+        } else {
+            operation(operation: currentOperation)
+        }
     }
     
     @IBAction func addPressed(_ sender: RoundButton) {
@@ -78,19 +101,27 @@ class ViewController: UIViewController {
     }
 
     @IBAction func modPressed(_ sender: RoundButton) {
+        operation(operation: .Mod)
     }
     
     @IBAction func factorialPressed(_ sender: RoundButton) {
+        currentSpecialOperation = .Fact
+        specialOperation(specialOperation: .Fact)
     }
     
     @IBAction func countPressed(_ sender: RoundButton) {
+        currentSpecialOperation = .Count
+        specialOperation(specialOperation: .Count)
     }
     
     @IBAction func averagePressed(_ sender: RoundButton) {
+        currentSpecialOperation = .Avg
+        specialOperation(specialOperation: .Avg)
     }
     
+    
+    
     func operation(operation: Operation) {
-                print("running number:\(runningNumber) left value:\(leftValue) right value: \(rightValue) current operation:\(currentOperation) result:\(result)")
         if currentOperation != .NULL {
             if runningNumber != "" {
                 rightValue = runningNumber
@@ -105,6 +136,9 @@ class ViewController: UIViewController {
                     result = "\(Double(leftValue)! * Double(rightValue)!)"
                 case .Divide:
                     result = "\(Double(leftValue)! / Double(rightValue)!)"
+                case .Mod:
+                    let times = Int(leftValue)! / Int(rightValue)!
+                    result = "\(Int(leftValue)! - (times * Int(rightValue)!))"
                 default:
                     result = ""
                 }
@@ -128,8 +162,57 @@ class ViewController: UIViewController {
             runningNumber = ""
             currentOperation = operation
         }
-        print("running number:\(runningNumber) left value:\(leftValue) right value: \(rightValue) current operation:\(currentOperation) result:\(result)")
 
+    }
+    
+    func specialOperation(specialOperation: SpecialOperation) {
+
+        if specialOperation == .Count {
+            if runningNumber == "" {
+                result = "\(count + 1)"
+                outputLabel.text = result
+                count = 0
+                runningNumber = ""
+                currentSpecialOperation = .NULL
+            } else {
+                count += 1
+                runningNumber = ""
+            }
+        } else if specialOperation == .Fact {
+            if Int(runningNumber) == 0 {
+                result = "1"
+                outputLabel.text = result
+                runningNumber = ""
+                currentSpecialOperation = .NULL
+            } else {
+                var answer = 1
+                for number in 1...Int(runningNumber)! {
+                    answer *= number
+                }
+                result = "\(answer)"
+                outputLabel.text = result
+                runningNumber = ""
+                currentSpecialOperation = .NULL
+            }
+            
+        } else if specialOperation == .Avg {
+            if runningNumber == "" {
+           
+                result = "\(sum / Double(sumCount + 1))"
+                if (Double(result)!.truncatingRemainder(dividingBy: 1) == 0) {
+                    result = "\(Int(Double(result)!))"
+                }
+                outputLabel.text = result
+                runningNumber = ""
+                sum = 0
+                sumCount = 0
+                currentSpecialOperation = .NULL
+            } else {
+                sum += Double(runningNumber)!
+                sumCount += 1
+                runningNumber = ""
+            }
+        }
     }
     
 }
